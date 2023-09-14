@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "smart-lessons"
+version = "0.1.0"
+description = ""
+authors = ["pozdniakova olga <caramelca07@mail.ru>"]
+readme = "README.md"
+packages = [{include = "smart_lessons"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+poetry = "^1.6.1"
+django = "^4.2.5"
+pillow = "^10.0.0"
+psycopg2-binary = "^2.9.7"
+djangorestframework = "^3.14.0"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
