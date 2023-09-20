@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from main.models import Payment
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'date', 'course', 'lesson', 'amount', 'method')
