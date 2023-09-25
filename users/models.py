@@ -8,6 +8,8 @@ class User(AbstractUser):
     phone = models.CharField(max_length=30, verbose_name='телефон')
     city = models.CharField(max_length=30, verbose_name='город')
 
+    is_moderator = models.BooleanField(default=False, verbose_name='модератор')  # права модератора
+
     username = None
     email = models.EmailField(unique=True, verbose_name='почта')
 
