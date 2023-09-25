@@ -6,7 +6,7 @@ from users.models import User
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Пользователь"""
+    """Сериализатор для обновления профиля"""
 
     class Meta:
         model = User
@@ -14,12 +14,20 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ProfileRetrieveSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Пользователь"""
+    """Сериализатор для просмотра профиля"""
     payments = PaymentSerializer(source='payment_set', many=True, read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'city', 'payments']
+
+
+class ShortProfileRetrieveSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра профиля: сокращенная версия для не владельца"""
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'email', 'phone', 'city']
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
