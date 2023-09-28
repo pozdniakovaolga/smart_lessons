@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from main.models import Course, Lesson, Payment
+from main.validators import LinkValidator
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -9,6 +10,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = '__all__'
+        validators = [LinkValidator(field='link')]
 
 
 class CourseSerializer(serializers.ModelSerializer):
