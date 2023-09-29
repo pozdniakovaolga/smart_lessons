@@ -4,9 +4,9 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import CreateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from main.models import Course, Lesson, Payment
+from main.models import Course, Lesson, Payment, Subscription
 from main.permissions import CoursePermissions, IsModerator, IsOwner
-from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
+from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
 from rest_framework.response import Response
 
 
@@ -83,4 +83,17 @@ class PaymentListAPIView(generics.ListAPIView):
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     ordering_fields = ['date']
     filterset_fields = ['course', 'lesson', 'method']
+    permission_classes = [IsAuthenticated]
+
+
+class SubscriptionCreateAPIView(CreateAPIView):
+    """Контроллер установки подписки пользователя"""
+    serializer_class = SubscriptionSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class SubscriptionDestroyAPIView(DestroyAPIView):
+    """Контроллер удаления подписки у пользователя"""
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
     permission_classes = [IsAuthenticated]
