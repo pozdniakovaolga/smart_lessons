@@ -5,6 +5,7 @@ from rest_framework.generics import CreateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from main.models import Course, Lesson, Payment, Subscription
+from main.paginators import PagePagination
 from main.permissions import CoursePermissions, IsModerator, IsOwner
 from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
 from rest_framework.response import Response
@@ -14,6 +15,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet для курса"""
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
+    pagination_class = PagePagination
     permission_classes = [IsAuthenticated, CoursePermissions]
 
     def perform_create(self, serializer):
@@ -26,7 +28,13 @@ class CourseViewSet(viewsets.ModelViewSet):
             queryset = Course.objects.all()
         else:
             queryset = Course.objects.filter(created_by=self.request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = CourseSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = CourseSerializer(queryset, many=True)
+
         return Response(serializer.data)
 
 
@@ -45,6 +53,7 @@ class LessonListAPIView(generics.ListAPIView):
     """Контроллер просмотра списка уроков"""
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
+    pagination_class = PagePagination
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
