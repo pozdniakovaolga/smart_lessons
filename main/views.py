@@ -1,13 +1,17 @@
+import os
+
+import stripe
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import CreateAPIView, DestroyAPIView
+from rest_framework.generics import CreateAPIView, DestroyAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from main.models import Course, Lesson, Payment, Subscription
 from main.paginators import PagePagination
 from main.permissions import CoursePermissions, IsModerator, IsOwner
-from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
+from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer, \
+    PaymentRetrieveSerializer, PaymentSuccessSerializer
 from rest_framework.response import Response
 
 
@@ -93,6 +97,40 @@ class PaymentListAPIView(generics.ListAPIView):
     ordering_fields = ['date']
     filterset_fields = ['course', 'lesson', 'method']
     permission_classes = [IsAuthenticated]
+
+
+class PaymentCreateAPIView(CreateAPIView):
+    """Контроллер создания платежа"""
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PaymentRetrieveAPIView(generics.RetrieveAPIView):
+    """Контроллер просмотра конкретного платежа"""
+    serializer_class = PaymentRetrieveSerializer
+    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class PaymentSuccessAPIView(generics.RetrieveAPIView):
+    """Контроллер успешного платежа"""
+    stripe.api_key = os.getenv('STRIPE_API_KEY')
+    serializer_class = PaymentSuccessSerializer
+    queryset = Payment.objects.all()
+
+    def get_object(self):
+
+        session_id = self.request.query_params.get('session_id')
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        payment_id = session.metadata['payment_id']
+        obj = get_object_or_404(self.get_queryset(), pk=payment_id)
+
+        if not obj.is_paid:
+            if session.payment_status == 'paid':
+                obj.is_paid = True
+                obj.save()
+        return obj
 
 
 class SubscriptionCreateAPIView(CreateAPIView):

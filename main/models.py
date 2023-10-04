@@ -1,6 +1,5 @@
 from django.db import models
 
-import users.models
 from users.models import User
 
 
@@ -51,6 +50,7 @@ class Payment(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='оплаченный урок')
     amount = models.PositiveIntegerField(verbose_name='сумма оплаты')
     method = models.CharField(max_length=25, choices=METHOD_CHOICES, verbose_name='способ оплаты')
+    is_paid = models.BooleanField(default=False, verbose_name='статус платежа')
 
     def __str__(self):
         return f'Платеж от {self.user} на сумму {self.amount}'
