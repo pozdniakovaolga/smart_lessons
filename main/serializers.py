@@ -13,6 +13,14 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = '__all__'
+
+
+class LessonCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания урока"""
+
+    class Meta:
+        model = Lesson
+        fields = '__all__'
         validators = [LinkValidator(field='link')]
 
 
