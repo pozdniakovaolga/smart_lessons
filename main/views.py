@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta, timezone
 
 import stripe
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,8 +12,9 @@ from main.models import Course, Lesson, Payment, Subscription
 from main.paginators import PagePagination
 from main.permissions import CoursePermissions, IsModerator, IsOwner
 from main.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer, \
-    PaymentRetrieveSerializer, PaymentSuccessSerializer
+    PaymentRetrieveSerializer, PaymentSuccessSerializer, LessonCreateSerializer
 from rest_framework.response import Response
+from main.tasks import send_mail_by_subscription
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -44,13 +46,23 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 class LessonCreateAPIView(CreateAPIView):
     """Контроллер создания урока"""
-    serializer_class = LessonSerializer
+    serializer_class = LessonCreateSerializer
     permission_classes = [IsAuthenticated, ~IsModerator]
 
     def perform_create(self, serializer):
-        new_lesson = serializer.save()
+
+        new_lesson = serializer.save()  # автоматическое сохранение автора урока
         new_lesson.created_by = self.request.user
         new_lesson.save()
+
+        course = get_object_or_404(Course.objects.all(), id=new_lesson.course_id)  # сохранение даты обновления курса
+        last_update = course.last_update
+        now = datetime.now(timezone.utc)
+        course.last_update = now
+        course.save()
+
+        if now - timedelta(hours=4) > last_update:    # отправка уведомления об обновлении курса
+            send_mail_by_subscription.delay(course.pk)
 
 
 class LessonListAPIView(generics.ListAPIView):
@@ -80,6 +92,18 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsOwner | IsModerator]
+
+    def perform_update(self, serializer):
+
+        updated_lesson = serializer.save()  # сохранение даты обновления курса
+        course = get_object_or_404(Course.objects.all(), id=updated_lesson.course_id)
+        last_update = course.last_update
+        now = datetime.now(timezone.utc)
+        course.last_update = now
+        course.save()
+
+        if now - timedelta(hours=4) > last_update:  # отправка уведомления об обновлении курса
+            send_mail_by_subscription.delay(course.pk)
 
 
 class LessonDestroyAPIView(DestroyAPIView):
