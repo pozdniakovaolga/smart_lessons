@@ -6,6 +6,7 @@ from main.models import Subscription
 
 @shared_task
 def send_mail_by_subscription(course_pk):
+    """Рассылает пользователям, у которых есть подписка, письма об обновлении материалов курса"""
     for subscription in Subscription.objects.filter(course_id=course_pk):
         try:
             send_mail(
