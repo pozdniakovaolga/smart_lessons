@@ -5,35 +5,23 @@
 
 Установка и использование
 
-Для работы программы необходимо заполнить файл .env своими данными (на примере файла .env.sample). 
+Для работы программы необходимо заполнить файлы:
+
+- .env своими данными (на примере файла .env.sample)
+
+- .env_docker своими данными (на примере файла .env_docker.sample). 
+
+
 
 Установить Docker и запустить следующие команды:
 
-#создание образа django
+#запуск приложения
 
-docker build -t smart_lessons_django .
-
-#создание сети для связи контейнеров
-
-docker network create --driver bridge smart_lessons_network
-
-#создание и запуск контейнера postgres
-#my_password - заменить на пароль Postgres
-#<directory_db> - заменить на директорию на вашем компьютере, где будут храниться базы данных
-
-docker run --name smart_lessons_db -e POSTGRES_PASSWORD=my_password -e POSTGRES_DB=smart_lessons -d -v <directory_db>:/var/lib/postgresql/data --network smart_lessons_network postgres:15
-
-#запуск миграций
-
-docker run --network smart_lessons_network smart_lessons_django python manage.py migrate 
-
-#создание и запуск контейнера django
-
-docker run --name smart_lessons_django --network smart_lessons_network -p 8000:8000 -d smart_lessons_django
+docker-compose up -d --build
 
 #создание superuser
 
-docker exec smart_lessons_django python manage.py csu 
+docker exec smart_lessons-app-1 python manage.py csu
 
 
 Описание приложений

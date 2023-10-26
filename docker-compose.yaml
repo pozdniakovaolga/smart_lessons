@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  redis:
+    image: redis
+    networks:
+      - smart_lessons_network
+
+  db:
+    image: postgres
+    networks:
+      - smart_lessons_network
+    env_file:
+      - .env_docker
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data/pgdata
+    ports:
+      - '5433:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    command: sh -c 'python manage.py migrate && python manage.py runserver 0.0.0.0:8000'
+    networks:
+      - smart_lessons_network
+    ports:
+      - '8001:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  celery:
+    build: .
+    networks:
+      - smart_lessons_network
+    tty: true
+    command: celery -A config worker -l INFO
+    depends_on:
+      - redis
+      - app
+
+  celery_beat:
+    build: .
+    networks:
+      - smart_lessons_network
+    tty: true
+    command: celery -A config beat -l INFO -S django
+    depends_on:
+      - redis
+      - app
+
+networks:
+  smart_lessons_network:
+    driver: bridge
