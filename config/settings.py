@@ -87,13 +87,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
+# HOST: 127.0.0.1 for local
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST')
+        'HOST': 'db'
     }
 }
 
@@ -169,10 +171,10 @@ SIMPLE_JWT = {
 }
 
 # URL-адрес брокера сообщений
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis на порту 6379
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 
 # URL-адрес брокера результатов, также Redis
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 
 # Часовой пояс для работы Celery
 CELERY_TIMEZONE = "UTC"
